@@ -33,7 +33,7 @@ Ce projet a pour but d'introduire Django aux étudiants en démontrant la puissa
 Avant de commencer, assurez-vous d'avoir les éléments suivants installés sur votre machine :
 
 - Python 3.x
-- Django 4.x
+- Django 5.x
 - Un environnement virtuel (recommandé)
 
 ## Installation

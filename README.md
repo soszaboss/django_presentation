@@ -40,8 +40,8 @@ Avant de commencer, assurez-vous d'avoir les éléments suivants installés sur 
 
 1. Clonez ce dépôt sur votre machine locale :
    ```bash
-   git clone https://github.com/votre-utilisateur/django-intro.git
-   cd django-intro
+   git clone https://github.com/soszaboss/django_presentation.git
+   cd django_presentation
    ```
 
 2. Créez et activez un environnement virtuel :

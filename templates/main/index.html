@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{%load crispy_forms_tags %} 
+{% block content %}
+<header class="bg-dark border-bottom border-body mb-4" data-bs-theme="dark">
+    {% include "includes/navbar.html" %}
+</header>
+<main class="container">
+    <div class="row mb-4">
+        <div class="col-sm">
+            <h2>Manage <b>Books</b></h2>
+        </div>
+        <div class="col-sm-2">
+            <a href="#addBookModal" class="btn btn-success" data-bs-toggle="modal"><span class="d-inline-block"><i class="material-icons">&#xE147;</i></span> <span class="d-inline-block">Add Book</span></a>
+        </div>
+    </div>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Title</th>
+                <th scope="col">ISBN</th>
+                <th scope="col">Publication Date</th>
+                <th scope="col">Author</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in books %}
+            <tr>
+                <th scope="row">{{ item.book.id }}</th>
+                <td>{{ item.book.title }}</td>
+                <td>{{ item.book.isbn }}</td>
+                <td>{{ item.book.publication_date }}</td>
+                <td>{{ item.book.author.fullname }}</td>
+                <td class="row">
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#editBookModal{{ item.book.id }}" class="w-25 border border-0 col bg-transparent">
+                        <i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i>
+                    </button>
+                    <a href="{% url 'delete_book' item.book.id %}" class="col text-danger">
+                        <i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i>
+                    </a>
+                </td>
+            </tr>
+            
+            <!-- Edit Book Modal -->
+            <div class="modal fade" id="editBookModal{{ item.book.id }}" tabindex="-1" aria-labelledby="editBookModalLabel{{ item.book.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editBookModalLabel{{ item.book.id }}">Edit Book</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="{% url 'edit_book' item.book.id %}">
+                                {% csrf_token %}
+                                {{ item.form|crispy }}
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <nav aria-label="Page navigation">
+        <ul class="pagination w-25 mx-auto">
+            {% if books.has_previous %}
+            <li class="page-item font-color">
+                <a class="page-link font-color" href="?page={{ books.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for num in books.paginator.page_range %}
+            {% if num > books.number|add:'-3' and num < books.number|add:'4' %}
+            <li class="page-item font-color {% if books.number == num %}active{% endif %}">
+                <a class="page-link font-color" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if books.has_next %}
+            <li class="page-item font-color">
+                <a class="page-link font-color" href="?page={{ books.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</main>
+
+<!-- Add Book Modal -->
+<div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBookModalLabel">Add New Book</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'index' %}">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn bg-color">Add Book</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

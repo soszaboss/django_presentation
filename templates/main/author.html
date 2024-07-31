@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<header class="bg-dark border-bottom border-body mb-4" data-bs-theme="dark">
+    {% include "includes/navbar.html" %}
+</header>
+<main class="container">
+    <div class="row mb-4">
+        <div class="col-sm">
+            <h2>Manage <b>Authors</b></h2>
+        </div>
+        <div class="col-sm-2">
+            <a href="#addAuthorModal" class="btn btn-success" data-bs-toggle="modal"><i class="material-icons">&#xE147;</i> <span>Add Author</span></a>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Fullname</th>
+                <th scope="col">Birth Date</th>
+                <th scope="col">Nationality</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for author in authors %}
+            <tr>
+                <th scope="row">{{ author.author.id }}</th>
+                <td>{{ author.author.fullname }}</td>
+                <td>{{ author.author.birth_date }}</td>
+                <td>{{ author.author.nationality }}</td>
+                <td>
+                    <div class="d-flex">
+                        <!-- Edit Button -->
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#editAuthorModal{{ author.id }}" class="btn btn-link text-dark p-0 me-2">
+                            <i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i>
+                        </button>
+
+                        <!-- Delete Button -->
+                        <a href="{% url 'delete_author' author.author.id %}" class="btn btn-link text-danger p-0">
+                            <i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Edit Author Modal -->
+            <div class="modal fade" id="editAuthorModal{{ author.id }}" tabindex="-1" aria-labelledby="editAuthorModalLabel{{ author.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editAuthorModalLabel{{ author.id }}">Edit Author</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="{% url 'edit_author' author.author.id %}">
+                                {% csrf_token %}
+                                {{ author_form|crispy }}
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination w-25 mx-auto">
+            {% if authors.has_previous %}
+            <li class="page-item">
+                <a class="page-link font-color" href="?page={{ authors.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for num in authors.paginator.page_range %}
+            {% if num > authors.number|add:'-3' and num < authors.number|add:'4' %}
+            <li class="page-item {% if authors.number == num %}bg-color{% endif %}">
+                <a class="page-link font-color " href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if authors.has_next %}
+            <li class="page-item">
+                <a class="page-link font-color" href="?page={{ authors.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</main>
+
+<!-- Add Author Modal -->
+<div class="modal fade" id="addAuthorModal" tabindex="-1" aria-labelledby="addAuthorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAuthorModalLabel">Add New Author</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary">Add Author</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

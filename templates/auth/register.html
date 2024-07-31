@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<main class="container h-100 d-flex flex-column justify-content-center">
+    <form class="w-50 mx-auto" action={% url "register" %} method="POST">
+        <h2 >Register</h2>
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="alert alert-warning alert-dismissible fade show w-75 mx-auto" role="alert">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+        <!-- Username input -->
+        <div data-mdb-input-init class="form-outline mb-2">
+            <label class="form-label" for="registerUsername">Username:</label>
+            {{ form.username }}
+        </div>
+
+        <!-- Email input -->
+        <div data-mdb-input-init class="form-outline mb-2">
+            <label class="form-label" for="registerEmail">Email:</label>
+        {{ form.email }}
+        </div>
+
+        <!-- Password input -->
+        <div data-mdb-input-init class="form-outline mb-2">
+            <label class="form-label" for="registerPassword">Password:</label>
+            {{ form.password1 }}
+        </div>
+
+        <!-- Repeat Password input -->
+        <div data-mdb-input-init class="form-outline mb-3">
+            <label class="form-label" for="registerRepeatPassword">Repeat password:</label>
+            {{ form.password2 }}
+        </div>
+        <!-- Submit button -->
+        <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn bg-color btn-block mb-2">Register</button>
+
+        <!-- Register buttons -->
+        <div class="text-center">
+            <p>Already Have an Account? <a class="text-color" href="{% url "login" %}">Login</a></p>
+        </div>
+
+    </form>
+</main>
+
+{% endblock content %}

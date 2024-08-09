@@ -30,9 +30,16 @@
                 if (window.location.href.includes('books')) {
                     authors.classList.remove('active');
                     books.classList.add('active');
-                } else {
+                } else if(window.location.href.includes('authors')){
                     books.classList.remove('active');
                     authors.classList.add('active');
+                }else{
+                    if (authors.classList.contains('active')) {
+                        authors.classList.remove('active');
+                    }
+                    if (books.classList.contains('active')) {
+                        books.classList.remove('active');
+                    }
                 }
             };
             navActive();

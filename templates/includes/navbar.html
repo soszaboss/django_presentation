@@ -8,12 +8,19 @@
             <!-- Move the dropdown to the left -->
             <ul class="navbar-nav gap-3">
                 <li class="nav-item">
-                    <a class="nav-link active" href="{% url "books" %}" id="books-nav-link" > Books</a>
+                    <a class="nav-link" href="{% url "index" %}" id="books-nav-link" > Books</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="{% url 'authors' %}" id="authors-nav-link">Authors</a>
                 </li>
             </ul>
+            <div class="container-fluid w-75">
+                <form class="d-flex" role="search" action="{% url 'search_results' %}" method="get">
+                    {% csrf_token %}
+                <input class="form-control me-2" placeholder="Search" aria-label="Search"  name="q" type="text">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
             <div class="nav-item dropdown dropstart">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <span><i class="bi bi-gear"></i></span>

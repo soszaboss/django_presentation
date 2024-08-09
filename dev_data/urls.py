@@ -18,14 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
-from basic_crud.views import index
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', login_required(index), name='index'),
     path('auth/', include('accounts.urls')),
-    path('book-management/', include('basic_crud.urls')),
+    path('home/', include('basic_crud.urls')),
 
 ]
 

@@ -3,8 +3,53 @@ from django.views import View
 from .forms import AuthorsForm, BooksForm
 from .models import Authors, Books
 from django.core.paginator import Paginator
+from django.views.generic import ListView
+from django.db.models import Q
 
+def books_and_form_update_data(book_model):
+    return [
+        {
+            'book': book,
+            'form': BooksForm(instance=book)
+        } for book in book_model
+    ]
 
+def authors_and_form_update_data(author_model):
+    return [
+            {
+                'author': { 'id': author.id,
+                            'fullname': author.fullname,
+                            'birth_date': author.birth_date,
+                            'nationality': author.nationality},
+                'form': AuthorsForm(instance=author)
+            } for author in author_model
+        ]
+class SearchResultsView(ListView):
+    model = Books
+    paginate_by = 10
+    template_name = 'main/index.html'
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        return Books.objects.filter(
+            Q(title__icontains=query) |
+            Q(isbn__icontains=query) |
+            Q(publication_date__icontains=query)
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        books_and_form_update = [
+            {
+                'book': book,
+                'form': BooksForm(instance=book)
+            } for book in context['object_list']
+        ]
+        context['books'] = books_and_form_update
+        context['form'] = BooksForm()
+        print
+        return context
+        
 # Function Based View
 def index(request):
     if request.method == "POST":
@@ -14,12 +59,7 @@ def index(request):
             return redirect('index')
     books = Books.objects.all().order_by('-id')
     form = BooksForm()
-    books_and_form_update = [
-        {
-            'book': book,
-            'form': BooksForm(instance=book)
-        } for book in books
-    ]
+    books_and_form_update = books_and_form_update_data(books) 
 
     # Ici django vous gere la logique de la pagination en peu de ligne
     # ce qui peut vous etre utile par exemple lors d'un conception de site e-commerce 
@@ -57,14 +97,7 @@ class AuthorsView(View):
     def get(self, request, *args, **kwargs):
         authors = Authors.objects.all().order_by('-id')
         form = self.form_class()
-        authors_and_form_update = [
-            {
-                'author': { 'id': author.id, 'fullname': author.fullname, 'birth_date': author.birth_date, 'nationality': author.nationality},
-                'form': self.form_class(instance=author)
-            } for author in authors
-        ]
-
-
+        authors_and_form_update = authors_and_form_update_data(authors)
         paginator = Paginator(authors_and_form_update, self.paginate_by)
         page_number = request.GET.get('page')
         page = paginator.get_page(page_number)

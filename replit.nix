@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.pgadmin4
     pkgs.cacert
     pkgs.geckodriver
     pkgs.zlib

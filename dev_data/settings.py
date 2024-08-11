@@ -19,6 +19,7 @@ from django.urls import reverse_lazy
 env = environ.Env()
 environ.Env.read_env()
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -109,8 +110,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION':
-        'redis://default:SuiURtrTNvbcqQzIEeSWIanKqGzRayhP@viaduct.proxy.rlwy.net:37672',  # Adresse de Redis
+        'LOCATION': env('REDIS_URL'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }

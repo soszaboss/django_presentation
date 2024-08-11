@@ -36,21 +36,19 @@ class SearchResultsView(ListView):
 
     def get_queryset(self):
         query = self.request.GET.get("q")
-        start_time = time.time()  # Commence le chronométrage
-
+        start_time = time.time()
         cached_query = cache.get(query)
         if cached_query:
-            elapsed_time = time.time(
-            ) - start_time  # Temps écoulé avec le cache
-            print(f"Temps écoulé (cache): {elapsed_time:.4f} secondes")
+            elapsed_time = time.time() - start_time
+            print(f"Temps écoulé (cache): {elapsed_time:.2f} secondes")
             return cached_query
         else:
             books = Books.objects.filter(
                 Q(title__icontains=query) | Q(isbn__icontains=query)
                 | Q(publication_date__icontains=query))
             cache.set(query, books, timeout=60 * 15)
-            elapsed_time = time.time() - start_time  # Temps écoulé sans cache
-            print(f"Temps écoulé (sans cache): {elapsed_time:.4f} secondes")
+            elapsed_time = time.time() - start_time
+            print(f"Temps écoulé (sans cache): {elapsed_time:.2f} secondes")
             return books
 
     def get_context_data(self, **kwargs):

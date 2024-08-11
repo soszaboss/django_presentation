@@ -5,25 +5,30 @@ from .models import Authors, Books
 from django.core.paginator import Paginator
 from django.views.generic import ListView
 from django.db.models import Q
+from django.core.cache import cache
+
+import time
+
 
 def books_and_form_update_data(book_model):
-    return [
-        {
-            'book': book,
-            'form': BooksForm(instance=book)
-        } for book in book_model
-    ]
+    return [{
+        'book': book,
+        'form': BooksForm(instance=book)
+    } for book in book_model]
+
 
 def authors_and_form_update_data(author_model):
-    return [
-            {
-                'author': { 'id': author.id,
-                            'fullname': author.fullname,
-                            'birth_date': author.birth_date,
-                            'nationality': author.nationality},
-                'form': AuthorsForm(instance=author)
-            } for author in author_model
-        ]
+    return [{
+        'author': {
+            'id': author.id,
+            'fullname': author.fullname,
+            'birth_date': author.birth_date,
+            'nationality': author.nationality
+        },
+        'form': AuthorsForm(instance=author)
+    } for author in author_model]
+
+
 class SearchResultsView(ListView):
     model = Books
     paginate_by = 10
@@ -31,25 +36,34 @@ class SearchResultsView(ListView):
 
     def get_queryset(self):
         query = self.request.GET.get("q")
-        return Books.objects.filter(
-            Q(title__icontains=query) |
-            Q(isbn__icontains=query) |
-            Q(publication_date__icontains=query)
-        )
+        start_time = time.time()  # Commence le chronométrage
+
+        cached_query = cache.get(query)
+        if cached_query:
+            elapsed_time = time.time(
+            ) - start_time  # Temps écoulé avec le cache
+            print(f"Temps écoulé (cache): {elapsed_time:.4f} secondes")
+            return cached_query
+        else:
+            books = Books.objects.filter(
+                Q(title__icontains=query) | Q(isbn__icontains=query)
+                | Q(publication_date__icontains=query))
+            cache.set(query, books, timeout=60 * 15)
+            elapsed_time = time.time() - start_time  # Temps écoulé sans cache
+            print(f"Temps écoulé (sans cache): {elapsed_time:.4f} secondes")
+            return books
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        books_and_form_update = [
-            {
-                'book': book,
-                'form': BooksForm(instance=book)
-            } for book in context['object_list']
-        ]
+        books_and_form_update = [{
+            'book': book,
+            'form': BooksForm(instance=book)
+        } for book in context['object_list']]
         context['books'] = books_and_form_update
         context['form'] = BooksForm()
-        print
         return context
-        
+
+
 # Function Based View
 def index(request):
     if request.method == "POST":
@@ -59,22 +73,20 @@ def index(request):
             return redirect('index')
     books = Books.objects.all().order_by('-id')
     form = BooksForm()
-    books_and_form_update = books_and_form_update_data(books) 
+    books_and_form_update = books_and_form_update_data(books)
 
     # Ici django vous gere la logique de la pagination en peu de ligne
-    # ce qui peut vous etre utile par exemple lors d'un conception de site e-commerce 
+    # ce qui peut vous etre utile par exemple lors d'un conception de site e-commerce
     # et que vous avez besoin de 10 articles par page etc
-    #  
+    #
     paginator = Paginator(books_and_form_update, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     #####################################
 
-    context = {
-        'books': page,
-        'form': form
-    }
+    context = {'books': page, 'form': form}
     return render(request, 'main/index.html', context)
+
 
 # Class Based View
 class AuthorsView(View):
@@ -101,12 +113,9 @@ class AuthorsView(View):
         paginator = Paginator(authors_and_form_update, self.paginate_by)
         page_number = request.GET.get('page')
         page = paginator.get_page(page_number)
-        context = {
-            'authors': page,
-            'form': form
-        }
-        print(context)
+        context = {'authors': page, 'form': form}
         return render(request, self.template_name, context)
+
 
 #######################################################################################################################################################""
 def edit_author(request, id):
@@ -128,10 +137,12 @@ def edit_author(request, id):
         form = AuthorsForm(instance=author)
     return render(request, 'main/edit_author.html', {'form': form})
 
+
 def delete_author(request, id):
     author = get_object_or_404(Authors, id=id)
     author.delete()
     return redirect('authors')
+
 
 def edit_book(request, id):
     book = get_object_or_404(Books, id=id)
@@ -147,6 +158,7 @@ def edit_book(request, id):
     else:
         form = BooksForm(instance=book)
     return render(request, 'main/edit_book.html', {'form': form})
+
 
 def delete_book(request, id):
     book = get_object_or_404(Books, id=id)

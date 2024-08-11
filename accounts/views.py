@@ -12,8 +12,8 @@ from django.shortcuts import redirect
 class Login(LoginView):
     form_class = LoginForm
     template_name = 'auth/login.html'
-    next_page = reverse_lazy('books')
-    redirect_authenticated_user = reverse_lazy('books')
+    next_page = reverse_lazy('index')
+    redirect_authenticated_user = reverse_lazy('index')
 
 
 class RegisterView(CreateView):

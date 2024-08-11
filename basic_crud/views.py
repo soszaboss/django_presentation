@@ -1,10 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
+
+from const import BOOKS
 from .forms import AuthorsForm, BooksForm
 from .models import Authors, Books
 from django.core.paginator import Paginator
 from django.views.generic import ListView
 from django.db.models import Q
+
+
+import time
+from django.core.cache import cache
+
 
 def books_and_form_update_data(book_model):
     return [
@@ -31,23 +38,39 @@ class SearchResultsView(ListView):
 
     def get_queryset(self):
         query = self.request.GET.get("q")
-        return Books.objects.filter(
-            Q(title__icontains=query) |
-            Q(isbn__icontains=query) |
-            Q(publication_date__icontains=query)
-        )
+        start_time = time.time()  # Commence le chronométrage
+
+        cached_query = cache.get(query)
+        if cached_query:
+            elapsed_time = time.time() - start_time
+            print("\n\n\n")
+            print("++++++++++++++++++++++++++++++++++++++++")
+            print(f"Temps écoulé (cache): {elapsed_time:.4f} secondes")
+            print("++++++++++++++++++++++++++++++++++++++++")
+            print("\n\n\n")
+            return cached_query
+        else:
+            books = Books.objects.filter(
+                Q(title__icontains=query) | Q(isbn__icontains=query)
+                | Q(publication_date__icontains=query)
+            )
+            cache.set(query, books, timeout=60 * 15)
+            elapsed_time = time.time() - start_time 
+            print("\n\n\n")
+            print("++++++++++++++++++++++++++++++++++++++++")
+            print(f"Temps écoulé (sans cache): {elapsed_time:.4f} secondes")
+            print("++++++++++++++++++++++++++++++++++++++++")
+            print("\n\n\n")
+            return books
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        books_and_form_update = [
-            {
-                'book': book,
-                'form': BooksForm(instance=book)
-            } for book in context['object_list']
-        ]
+        books_and_form_update = [{
+            'book': book,
+            'form': BooksForm(instance=book)
+        } for book in context['object_list']]
         context['books'] = books_and_form_update
         context['form'] = BooksForm()
-        print
         return context
         
 # Function Based View
@@ -152,3 +175,8 @@ def delete_book(request, id):
     book = get_object_or_404(Books, id=id)
     book.delete()
     return redirect('index')
+
+def create_books_view(request):
+    for book_data in BOOKS:
+        Books.objects.create(**book_data)
+    return redirect('/home')

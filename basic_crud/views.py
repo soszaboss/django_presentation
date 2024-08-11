@@ -38,7 +38,7 @@ class SearchResultsView(ListView):
 
     def get_queryset(self):
         query = self.request.GET.get("q")
-        start_time = time.time()  # Commence le chronométrage
+        start_time = time.time() 
 
         cached_query = cache.get(query)
         if cached_query:
@@ -57,9 +57,9 @@ class SearchResultsView(ListView):
             cache.set(query, books, timeout=60 * 15)
             elapsed_time = time.time() - start_time 
             print("\n\n\n")
-            print("++++++++++++++++++++++++++++++++++++++++")
+            print("++++++++++++++++++++++++++++++++++++++")
             print(f"Temps écoulé (sans cache): {elapsed_time:.4f} secondes")
-            print("++++++++++++++++++++++++++++++++++++++++")
+            print("++++++++++++++++++++++++++++++++++++++")
             print("\n\n\n")
             return books
 

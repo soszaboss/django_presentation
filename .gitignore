@@ -1,1 +1,5 @@
 .venv/
+__pycache__
+*/__pycache__/
+/accounts/__pycache__
+dev_data/.env
